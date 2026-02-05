@@ -71,7 +71,7 @@ body {
   transform-origin: top center;
   transition: transform 0.7s ease,
   z-index 0s linear 0.7s; /* delay z-index change */
-  z-index: 9;
+  z-index: 11;
 }
 
 /* ================= FLAP ================= */
@@ -89,7 +89,7 @@ body {
   transform-origin: top center;
   transition: transform 0.7s ease,
   z-index 0s linear 0.7s; /* delay z-index change */
-  z-index: 9;
+  z-index: 11;
 }
 
 .envelope.open .flap,
@@ -110,7 +110,7 @@ body {
   height: 28px;
   background: pink;
   transform: translateX(-50%) rotate(-45deg);
-  z-index: 9;
+  z-index: 16;
   
 }
 
@@ -118,12 +118,20 @@ body {
   transform: translateY(50%);
   opacity: 100;
   transition: transform 0.6s ease, opacity 0.4s ease;
+  
   }
+  
+  .envelope.tuck .letter {
+  transform: translateY(50%);
+  z-index: 2; /* BELOW flap & front */
+  transition: transform 0.6s ease, z-index 0s linear 0.6s;
+}
   
  .envelope.closing .flap,
 .envelope.closing .flap-border {
   transform: rotateX(0deg);
   transition-timing-function: cubic-bezier(.55,.06,.68,.19);
+  z-index: 11;
 }
 
 
@@ -179,7 +187,7 @@ body {
   text-align: center;
   transform: translateY(50%);
   transition: transform 0.9s ease, z-index 0s linear 0.7s;
-  z-index: 8; /* behind flap when closed */
+  z-index: 6; /* behind flap when closed */
   box-shadow: 0 8px 14px rgba(0,0,0,0.2);
 }
 
@@ -189,7 +197,7 @@ body {
 
 .envelope.openLetter .letter {
    transform: translateY(-30%);
-  z-index: 12; /* above back (1) but below flap (8) */
+  z-index: 6; /* above back (1) but below flap (8) */
   transition: transform 0.7s ease, z-index 0s linear 0s;
 }
 
@@ -262,37 +270,36 @@ const envelope = document.getElementById("envelope");
 let stage = 0;
 
 envelope.addEventListener("click", (e) => {
-  if (e.target.classList.contains("close")) {
+   if (e.target.classList.contains("close")) {
 
-  // STEP 1 — letter slides back from fully open
-  envelope.classList.remove("openLetter");
-
-  setTimeout(() => {
-
-    // STEP 2 — letter tucks fully inside envelope
-    envelope.classList.remove("peek");
+    // STEP 1 — letter slides down from open
+    envelope.classList.remove("openLetter");
 
     setTimeout(() => {
 
-      // STEP 3 — flap closes AFTER letter is hidden
-      envelope.classList.remove("open");
-      envelope.classList.add("closing");
+      // STEP 2 — force letter fully BEHIND
+      envelope.classList.add("tuck");
 
       setTimeout(() => {
 
-        // STEP 4 — clean reset
-        envelope.classList.remove("closing");
-        stage = 0;
+        // STEP 3 — close flap only AFTER letter is hidden
+        envelope.classList.remove("open", "peek");
+        envelope.classList.add("closing");
 
-      }, 1000); // flap close duration
+        setTimeout(() => {
 
-    }, 0); // tuck duration
+          // STEP 4 — full reset
+          envelope.classList.remove("closing", "tuck");
+          stage = 0;
 
-  }, 30); // slide-in duration
+        }, 700); // flap close duration
 
-  return;
-}
+      }, 600); // letter tuck duration
 
+    }, 50);
+
+    return;
+  }
 
   if (stage === 0) {
     envelope.classList.add("open", "peek");
@@ -303,6 +310,7 @@ envelope.addEventListener("click", (e) => {
     envelope.classList.add("openLetter");
     stage = 2;
   }
+
 
 });
 
